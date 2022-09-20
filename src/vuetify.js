@@ -1,6 +1,6 @@
-import Vue from 'vue'
-import 'vuetify/src/stylus/app.styl'
-import manifestJSON from '../public/manifest.json'
+import Vue from "vue";
+import "vuetify/src/stylus/app.styl";
+import manifestJSON from "../public/manifest.json";
 
 import {
   Vuetify,
@@ -14,8 +14,8 @@ import {
   VIcon,
   VList,
   VProgressLinear,
-  VTextField
-} from 'vuetify'
+  VTextField,
+} from "vuetify";
 
 Vue.use(Vuetify, {
   components: {
@@ -29,9 +29,9 @@ Vue.use(Vuetify, {
     VIcon,
     VList,
     VProgressLinear,
-    VTextField
+    VTextField,
   },
   theme: {
-    primary: manifestJSON.theme_color
-  }
-})
+    primary: manifestJSON.theme_color,
+  },
+});
