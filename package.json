@@ -47,9 +47,7 @@
       "parser": "@babel/eslint-parser"
     },
     "rules": {
-      "vue/multi-word-component-names": ["error", {
-        "ignores": ["Home"]
-      }]
+      "vue/multi-word-component-names": "off"
     }
   }
 }
