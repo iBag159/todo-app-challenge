@@ -1,140 +1,112 @@
 <template>
-  <v-layout row wrap>
-    <v-flex text-xs-center>
-      <!-- header -->
-      <h1 class="primary--text display-3 font-weight-medium my-3">TODOS</h1>
-      <v-card>
-        <v-list class="pa-0">
-          <v-list-tile>
+  <Layout>
+    <TodoField
+      v-on:add-todo="addTodo"
+      :all-checked="allChecked"
+      :todos="todos"
+      v-on:toggle-all="toggleAll"
+    />
+    <!-- main -->
+    <v-card class="mt-3" v-show="todos.length">
+      <v-progress-linear class="my-0" v-model="progressPercentage" />
+      <v-card-actions class="px-3" v-show="todos.length">
+        <span class="primary--text">
+          {{ remaining }} {{ remaining | pluralize("item") }} left
+        </span>
+        <v-spacer></v-spacer>
+        <v-btn-toggle
+          class="elevation-0"
+          mandatory
+          v-model="visibility"
+          v-show="todos.length"
+        >
+          <v-btn
+            :key="key"
+            :to="key"
+            :value="key"
+            class="mx-0"
+            color="primary"
+            flat
+            small
+            v-for="(val, key) in filters"
+          >
+            {{ key | capitalize }}
+          </v-btn>
+        </v-btn-toggle>
+      </v-card-actions>
+      <v-list class="pa-0">
+        <template v-for="todo in filteredTodos">
+          <v-divider :key="`${todo.uid}-divider`"></v-divider>
+          <v-list-tile
+            :key="todo.uid"
+            class="todo-item"
+            :class="{ editing: editing }"
+          >
             <v-list-tile-action>
               <v-checkbox
-                :input-value="allChecked"
-                @change="toggleAll(!allChecked)"
+                :input-value="todo.done"
+                @change="toggleTodo(todo)"
                 color="primary"
-                v-if="todos.length > 0"
+                v-if="!!!editing"
               ></v-checkbox>
-              <v-icon color="primary" v-else>check</v-icon>
+              <v-icon color="primary" v-else>edit</v-icon>
             </v-list-tile-action>
+            <template v-if="!!!editing">
+              <v-list-tile-content
+                :class="{ 'primary--text': todo.done }"
+                @dblclick="editing = true"
+              >
+                {{ todo.text }}
+              </v-list-tile-content>
+              <v-list-tile-action>
+                <v-btn
+                  @click="removeTodo(todo)"
+                  color="red lighten-3"
+                  flat
+                  icon
+                >
+                  <v-icon>close</v-icon>
+                </v-btn>
+              </v-list-tile-action>
+            </template>
             <v-text-field
-              :label="'New todo input'"
-              @keydown.enter="addTodo"
-              autofocus
-              browser-autocomplete="off"
+              :value="todo.text"
+              @blur="doneEdit"
+              @keyup.enter="doneEdit"
+              @keyup.esc="cancelEdit"
               clearable
               color="primary"
               flat
               hide-details
               maxlength="1023"
-              placeholder="What needs to be done?"
+              ref="input"
               solo
-              v-model="newTodo"
+              v-else
+              v-focus="editing"
             ></v-text-field>
           </v-list-tile>
-        </v-list>
-      </v-card>
-      <!-- main -->
-      <v-card class="mt-3" v-show="todos.length">
-        <v-progress-linear class="my-0" v-model="progressPercentage" />
-        <v-card-actions class="px-3" v-show="todos.length">
-          <span class="primary--text">
-            {{ remaining }} {{ remaining | pluralize("item") }} left
-          </span>
-          <v-spacer></v-spacer>
-          <v-btn-toggle
-            class="elevation-0"
-            mandatory
-            v-model="visibility"
-            v-show="todos.length"
-          >
-            <v-btn
-              :key="key"
-              :to="key"
-              :value="key"
-              class="mx-0"
-              color="primary"
-              flat
-              small
-              v-for="(val, key) in filters"
-            >
-              {{ key | capitalize }}
-            </v-btn>
-          </v-btn-toggle>
-        </v-card-actions>
-        <v-list class="pa-0">
-          <template v-for="todo in filteredTodos">
-            <v-divider :key="`${todo.uid}-divider`"></v-divider>
-            <v-list-tile
-              :key="todo.uid"
-              class="todo-item"
-              :class="{ editing: editing }"
-            >
-              <v-list-tile-action>
-                <v-checkbox
-                  :input-value="todo.done"
-                  @change="toggleTodo(todo)"
-                  color="primary"
-                  v-if="!!!editing"
-                ></v-checkbox>
-                <v-icon color="primary" v-else>edit</v-icon>
-              </v-list-tile-action>
-              <template v-if="!!!editing">
-                <v-list-tile-content
-                  :class="{ 'primary--text': todo.done }"
-                  @dblclick="editing = true"
-                >
-                  {{ todo.text }}
-                </v-list-tile-content>
-                <v-list-tile-action>
-                  <v-btn
-                    @click="removeTodo(todo)"
-                    color="red lighten-3"
-                    flat
-                    icon
-                  >
-                    <v-icon>close</v-icon>
-                  </v-btn>
-                </v-list-tile-action>
-              </template>
-              <v-text-field
-                :value="todo.text"
-                @blur="doneEdit"
-                @keyup.enter="doneEdit"
-                @keyup.esc="cancelEdit"
-                clearable
-                color="primary"
-                flat
-                hide-details
-                maxlength="1023"
-                ref="input"
-                solo
-                v-else
-                v-focus="editing"
-              ></v-text-field>
-            </v-list-tile>
-          </template>
-        </v-list>
-      </v-card>
-      <v-btn
-        @click="clearCompleted"
-        block
-        class="mt-3"
-        color="primary"
-        depressed
-        round
-        v-show="todos.length > remaining"
-      >
-        Clear completed
-      </v-btn>
-      <!-- footer -->
-      <footer class="caption">
-        <p>Double-click to edit a todo</p>
-      </footer>
-    </v-flex>
-  </v-layout>
+        </template>
+      </v-list>
+    </v-card>
+    <v-btn
+      @click="clearCompleted"
+      block
+      class="mt-3"
+      color="primary"
+      depressed
+      round
+      v-show="todos.length > remaining"
+    >
+      Clear completed
+    </v-btn>
+    <!-- footer -->
+  </Layout>
 </template>
 
 <script>
 import vuex from "vuex";
+import Layout from "@/components/layout/Layout";
+import TodoField from "@/components/TodoField";
 
 var filters = {
   all: function (todos) {
@@ -166,7 +138,6 @@ export default {
   props: ["filter"],
   data() {
     return {
-      newTodo: "",
       filters: filters,
       visibility: this.filter,
       editing: false,
@@ -207,12 +178,11 @@ export default {
       "removeTodo",
       "toggleTodo",
     ]),
-    addTodo() {
-      var text = this.newTodo.trim();
+    addTodo(newTodo) {
+      var text = newTodo.trim();
       if (text) {
         this.$store.dispatch("addTodo", text);
       }
-      this.newTodo = "";
     },
     doneEdit(e) {
       var value = e.target.value.trim();
@@ -240,12 +210,14 @@ export default {
       return s.charAt(0).toUpperCase() + s.slice(1);
     },
   },
+  components: {
+    Layout,
+    TodoField,
+  },
 };
 </script>
 
 <style lang="stylus">
-h1
-  opacity: 0.3
 .v-text-field .v-input__slot
   padding: 0 !important
 
@@ -256,16 +228,4 @@ h1
     padding-bottom: 12px
   &.editing .v-list__tile
     height: 48px
-
-footer
-  margin: 65px auto 0
-  color: #bfbfbf
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5)
-  p
-    line-height: 1
-  a
-    color: inherit
-    text-decoration: none
-    &:hover
-      text-decoration: underline
 </style>
