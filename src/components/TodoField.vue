@@ -5,7 +5,7 @@
         <v-list-tile-action>
           <v-checkbox
             :input-value="allChecked"
-            @change="toggleCheckbox"
+            @change="toggleAll"
             color="primary"
             v-if="todos.length > 0"
           ></v-checkbox>
@@ -13,7 +13,7 @@
         </v-list-tile-action>
         <v-text-field
           :label="'New todo input'"
-          @keydown.enter="addTodo"
+          @keydown.enter="addNewTodo"
           autofocus
           browser-autocomplete="off"
           clearable
@@ -30,30 +30,35 @@
   </v-card>
 </template>
 <script>
+import { mapActions } from "vuex";
 export default {
-  data() {
-    return {
-      newTodo: "",
-    };
-  },
   props: {
     todos: {
       type: Array,
       default: () => [],
     },
-    allChecked: {
-      type: Boolean,
-      default: false,
-    },
+  },
+  data() {
+    return {
+      newTodo: "",
+    };
   },
   methods: {
-    toggleCheckbox() {
-      this.$emit("toggle-all");
-    },
-    addTodo() {
-      this.$emit("add-todo", this.newTodo);
+    ...mapActions(["toggleAll", "addTodo"]),
+    addNewTodo() {
+      this.addTodo(this.newTodo);
       this.newTodo = "";
+    },
+  },
+  computed: {
+    allChecked() {
+      return this.todos.every((todo) => todo.done);
     },
   },
 };
 </script>
+
+<style lang="stylus">
+.v-text-field .v-input__slot
+  padding: 0 !important
+</style>
