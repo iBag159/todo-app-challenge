@@ -50,9 +50,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions([
-      "clearCompleted",
-    ]),
+    ...mapActions(["clearCompleted"]),
   },
   components: {
     Layout,
