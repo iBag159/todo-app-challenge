@@ -2,7 +2,16 @@
   <Layout>
     <TodoField :todos="todos" />
     <!-- main -->
-    <TodoList :filter="filter" :todos="todos" />
+    <v-card class="mt-3" v-show="todos.length">
+      <v-progress-linear class="my-0" v-model="progressPercentage" />
+      <TodoControls
+        v-on:update-visibility="updateVisibility"
+        :filters="filters"
+        :filter="filter"
+        :remaining="remaining"
+      />
+      <TodoList :todos="filteredTodos" />
+    </v-card>
     <v-btn
       @click="clearCompleted"
       block
@@ -23,13 +32,26 @@ import { mapActions } from "vuex";
 import Layout from "@/components/layout/Layout";
 import TodoField from "@/components/TodoField";
 import TodoList from "@/components/TodoList";
+import TodoControls from "@/components/TodoControls.vue";
+
+const filters = {
+  all: function (todos) {
+    return todos;
+  },
+  active: function (todos) {
+    return todos.filter((t) => !t.done);
+  },
+  completed: function (todos) {
+    return todos.filter((t) => t.done);
+  },
+};
 
 export default {
   props: ["filter"],
   data() {
     return {
+      filters: filters,
       visibility: this.filter,
-      editing: false,
     };
   },
   directives: {
@@ -45,17 +67,28 @@ export default {
     todos() {
       return this.$store.state.todos;
     },
+    filteredTodos() {
+      return filters[this.visibility](this.todos);
+    },
+    progressPercentage() {
+      var len = this.todos.length;
+      return ((len - this.remaining) * 100) / len;
+    },
     remaining() {
-      return this.todos.filter((todo) => !todo.done).length;
+      return this.filters["active"](this.todos).length;
     },
   },
   methods: {
     ...mapActions(["clearCompleted"]),
+    updateVisibility(newVisibility) {
+      this.visibility = newVisibility;
+    },
   },
   components: {
     Layout,
     TodoField,
     TodoList,
+    TodoControls,
   },
 };
 </script>
